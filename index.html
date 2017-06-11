@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>GifTastic</title>
+	<link rel="stylesheet" type="text/css" href="assets/css/reset.css"> 
+	<link rel="stylesheet" type="text/css" href="assets/css/style.css">
+</head>
+<body>
+	<div class='container'>
+		<h1>Travel The World</h1>
+
+		<div id='form-container'>
+			<p>Add a travel Destination:</p>
+			<input type="text" id="topic-input">
+			<input id="add-topic" type="button" value="Add">
+		</div>
+
+		<div id ='button-container'></div>
+
+		<div id='img-container'></div>
+	</div>
+
+
+<script type="text/javascript" src="https://code.jquery.com/jquery-2.2.0.js"></script> 
+	
+<!-- <script type="text/javascript" src="assets/javascript/app.js"></script> -->
+
+<script type="text/javascript">
+	var topics = ['Antarctica','Hawaii','London','Switzerland','Paris','Rome','Venice','Athens' ]; 
+	//['Gymnastics','Volleyball','Soccer','Dance','Cats','Dogs','Antarctica','Japan','Peru','Hawaii','Alps'];
+	//['Archery','Badminton','Basketball','Boxing','Cycling','Diving','Equestrian','Fencing','Soccer','Golf','Gymnastics','Rowing','Rugby','Swimming','Volleyball','Olympics'];
+
+	function createButtonList() {
+		$('#button-container').html('');
+		for (var i = 0; i < topics.length; i++) {
+			var btn = $('<button>').html(topics[i]);
+			btn.attr("data-topic",topics[i]);
+			btn.addClass("topic-btn");
+			$('#button-container').append(btn);
+		}
+
+	}
+
+	createButtonList();
+
+	function addTopicBtn(){
+		var topic = $('#topic-input').val().trim();
+		topics.push(topic);
+		createButtonList();
+	}
+
+	function listGIFs(){
+		$('#img-container').html('');
+		var imageTitle = $(this).attr("data-topic");
+		var limit = 10;
+		var queryURL = "http://api.giphy.com/v1/gifs/search?q=" + imageTitle + "&api_key=dc6zaTOxFJmzC&limit=" + limit;
+		$.ajax({
+			url: queryURL,
+			method: "GET"			
+		}).done(function(response){
+
+			for (var i = 0; i < limit; i++) {
+				var imgDiv = $('<div>');
+				imgDiv.addClass('img-div');
+
+				var ratingDiv = $('<div>');
+				ratingDiv.html(response.data[i].rating);
+				imgDiv.append(ratingDiv);
+
+
+				var image = $('<img>');
+				image.attr('id','gif-image');
+				image.attr('src',response.data[i].images.fixed_height_still.url);
+				image.attr('data-state','still');
+				image.attr('data-topic',imageTitle);
+				image.attr('data-still',response.data[i].images.fixed_height_still.url);
+				image.attr('data-animate',response.data[i].images.fixed_height.url);
+
+				imgDiv.append(image);
+
+				$('#img-container').append(imgDiv);
+			}
+		});
+	}
+
+	function animateGIF(){
+		var newSRC;
+		if($(this).attr('data-state') === 'still'){
+			newSRC = $(this).attr('data-animate');
+			$(this).attr('src',newSRC);
+			$(this).attr('data-state','animated');
+		}
+		else{
+			newSRC = $(this).attr('data-still');
+			$(this).attr('src',newSRC);
+			$(this).attr('data-state','still');
+		}
+	}
+
+	$(document).on("click","#add-topic", addTopicBtn);
+
+	$(document).on("click",".topic-btn",listGIFs);
+
+	$(document).on("click","#gif-image",animateGIF);
+
+
+</script>
+
+</body>
+</html>
